@@ -18,5 +18,9 @@ gcloud -q compute routes delete \
   kubernetes-route-10-200-2-0-24
 gcloud -q compute networks subnets delete kubernetes
 gcloud -q compute networks delete kubernetes-the-hard-way
-
+echo "Cleaning up keys and certs y/n"
+read answer
+if [ "${answer}" == "y" ]; then
+    rm `ls | grep -v .sh | xargs`
+fi
 echo "Done"

@@ -2,6 +2,7 @@
 #=============================#
 # K8s the hard way with GCE   #
 #=============================#
+set -ex
 
 echo "VPC"
 gcloud compute networks create kubernetes-the-hard-way --mode custom
@@ -216,7 +217,6 @@ cfssl gencert \
   kubernetes-csr.json | cfssljson -bare kubernetes
 
 echo "Make sure keys were exchanged to scp stuff!"
-pause
   
 echo "Distributing client and server certs"
 for instance in worker-0 worker-1 worker-2; do
@@ -299,12 +299,12 @@ done
 echo "Setting up controllers"
 for instance in controller-0 controller-1 controller-2; do
   gcloud compute scp ctl-setup-01.sh ${instance}:~/
-  gcloud compute ssh ${instance} ~/ctl-setup-01.sh
+  gcloud compute ssh ${instance} --command "./ctl-setup-01.sh"
 done
 
 echo "Setting up RBAC for kubelet auth on controller-0"
-gcloud compute scp ctl-setup-02.sh controller-0
-gcloud compute ssh controller-0 ~/ctl-setup-02.sh
+gcloud compute scp ctl-setup-02.sh controller-0:~/
+gcloud compute ssh controller-0 --command "./ctl-setup-02.sh"
 
 echo "Provision Frontend load balancer"
 
@@ -330,7 +330,7 @@ curl --cacert ca.pem https://${KUBERNETES_PUBLIC_ADDRESS}:6443/version
 echo "Bootstrapping the worker nodes"
 for instance in worker-0 worker-1 worker-2; do
   gcloud compute scp wrk-setup-01.sh ${instance}:~/
-  gcloud compute ssh ${instance} ~/wrk-setup-01.sh
+  gcloud compute ssh ${instance} --command "./wrk-setup-01.sh"
 done
 
 echo "Configuring kubectl for remote access"
@@ -380,10 +380,5 @@ echo "Verifying dns"
 kubectl run busybox --image=busybox --command -- sleep 3600
 kubectl get pods -l run=busybox
 POD_NAME=$(kubectl get pods -l run=busybox -o jsonpath="{.items[0].metadata.name}")
+sleep 60s
 kubectl exec -ti ${POD_NAME} -- nslookup kubernetes
-
-
-
-
-
-

@@ -1,2 +1,6 @@
 # Generated files
-!gcloud/*.sh
+gcloud/*.csr
+gcloud/*.json
+gcloud/*.kubeconfig
+gcloud/*.pem
+gcloud/*.yaml
